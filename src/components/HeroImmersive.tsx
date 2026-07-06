@@ -39,32 +39,37 @@ export default function HeroImmersive() {
   useEffect(() => {
     let isMounted = true;
     const loadFrames = async () => {
+      // 15 frames is enough to cover the initial hero scroll without stutter
+      // The rest load asynchronously behind the scenes
+      const CRITICAL_FRAMES = 15;
       let loadedCount = 0;
-      const urls = [];
+      
+      const criticalPromises = [];
+      
       for (let i = 0; i < FRAME_COUNT; i++) {
-        urls.push(`${URL_PREFIX}${pad(i, 3)}${URL_SUFFIX}`);
+        const url = `${URL_PREFIX}${pad(i, 3)}${URL_SUFFIX}`;
+        const img = new window.Image();
+        img.src = url;
+        framesRef.current[i] = img;
+
+        if (i < CRITICAL_FRAMES) {
+          criticalPromises.push(
+            new Promise((resolve) => {
+              const handleLoad = () => {
+                if (isMounted) {
+                  loadedCount++;
+                  setLoadProgress(Math.floor((loadedCount / CRITICAL_FRAMES) * 100));
+                }
+                resolve(true);
+              };
+              img.onload = handleLoad;
+              img.onerror = handleLoad;
+            })
+          );
+        }
       }
 
-      await Promise.all(
-        urls.map((url, i) => {
-          return new Promise((resolve) => {
-            const img = new window.Image();
-            img.src = url;
-            framesRef.current[i] = img;
-            
-            const handleLoad = () => {
-              if (isMounted) {
-                loadedCount++;
-                setLoadProgress(Math.floor((loadedCount / FRAME_COUNT) * 100));
-              }
-              resolve(true);
-            };
-
-            img.onload = handleLoad;
-            img.onerror = handleLoad;
-          });
-        })
-      );
+      await Promise.all(criticalPromises);
       
       if (isMounted) {
         setLoadProgress(100);
@@ -131,30 +136,32 @@ export default function HeroImmersive() {
       const clampedFrame = Math.max(0, Math.min(FRAME_COUNT - 1, frameToDraw));
       
       const img = framesRef.current[clampedFrame];
-      if (img && currentFrameRef.current !== clampedFrame) {
-        currentFrameRef.current = clampedFrame;
-        
-        const canvasRatio = cw / ch;
-        const imgRatio = img.width / img.height;
-        
-        let drawWidth, drawHeight, offsetX, offsetY;
-        
-        if (canvasRatio > imgRatio) {
-          drawWidth = cw;
-          drawHeight = cw / imgRatio;
-          offsetX = 0;
-          offsetY = (ch - drawHeight) / 2;
-        } else {
-          drawWidth = ch * imgRatio;
-          drawHeight = ch;
-          offsetX = (cw - drawWidth) / 2;
-          offsetY = 0;
+      if (img && img.complete) {
+        if (currentFrameRef.current !== clampedFrame) {
+          currentFrameRef.current = clampedFrame;
+          
+          const canvasRatio = cw / ch;
+          const imgRatio = img.width / img.height;
+          
+          let drawWidth, drawHeight, offsetX, offsetY;
+          
+          if (canvasRatio > imgRatio) {
+            drawWidth = cw;
+            drawHeight = cw / imgRatio;
+            offsetX = 0;
+            offsetY = (ch - drawHeight) / 2;
+          } else {
+            drawWidth = ch * imgRatio;
+            drawHeight = ch;
+            offsetX = (cw - drawWidth) / 2;
+            offsetY = 0;
+          }
+          
+          ctx.fillStyle = "#E2DDD5";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          
+          ctx.drawImage(img, offsetX * dpr, offsetY * dpr, drawWidth * dpr, drawHeight * dpr);
         }
-        
-        ctx.fillStyle = "#E2DDD5";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        ctx.drawImage(img, offsetX * dpr, offsetY * dpr, drawWidth * dpr, drawHeight * dpr);
       }
       
       rafRef.current = requestAnimationFrame(renderLoop);
