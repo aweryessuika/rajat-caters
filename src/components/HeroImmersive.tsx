@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
-import { motion, useScroll, useSpring, useTransform } from "framer-motion";
+import { motion, useScroll, useSpring, useTransform, AnimatePresence } from "framer-motion";
 
 const FRAME_COUNT = 101;
 const URL_PREFIX = "/sequence/frame_";
@@ -28,6 +28,7 @@ export default function HeroImmersive() {
   });
   
   const [loaded, setLoaded] = useState(false);
+  const [loadProgress, setLoadProgress] = useState(0);
   const framesRef = useRef<HTMLImageElement[]>([]);
   
   const progressRef = useRef(0);
@@ -36,19 +37,62 @@ export default function HeroImmersive() {
   const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
     const loadFrames = async () => {
-      const promises = [];
+      let loadedCount = 0;
+      const urls = [];
       for (let i = 0; i < FRAME_COUNT; i++) {
-        const img = new window.Image();
-        img.src = `${URL_PREFIX}${pad(i, 3)}${URL_SUFFIX}`;
-        framesRef.current[i] = img;
-        promises.push(img.decode().catch(() => {}));
+        urls.push(`${URL_PREFIX}${pad(i, 3)}${URL_SUFFIX}`);
       }
-      await Promise.all(promises);
-      setLoaded(true);
+
+      await Promise.all(
+        urls.map((url, i) => {
+          return new Promise((resolve) => {
+            const img = new window.Image();
+            img.src = url;
+            framesRef.current[i] = img;
+            
+            const handleLoad = () => {
+              if (isMounted) {
+                loadedCount++;
+                setLoadProgress(Math.floor((loadedCount / FRAME_COUNT) * 100));
+              }
+              resolve(true);
+            };
+
+            img.onload = handleLoad;
+            img.onerror = handleLoad;
+          });
+        })
+      );
+      
+      if (isMounted) {
+        setLoadProgress(100);
+        // Small delay to let the 100% render briefly
+        setTimeout(() => {
+          if (isMounted) setLoaded(true);
+        }, 100);
+      }
     };
     loadFrames();
+    
+    // Prevent scrolling while loading
+    document.body.style.overflow = "hidden";
+    
+    return () => { 
+      isMounted = false; 
+    };
   }, []);
+  
+  // Re-enable scroll when loaded
+  useEffect(() => {
+    if (loaded) {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [loaded]);
 
   useEffect(() => {
     const unsub = scrollYProgress.on("change", (latest) => {
@@ -132,13 +176,62 @@ export default function HeroImmersive() {
   return (
     <div ref={containerRef} className="relative h-[300vh] bg-[#E2DDD5]">
       <div className="sticky top-0 h-screen w-full overflow-hidden flex items-center justify-center bg-[#E2DDD5]">
-        {!loaded && (
-          <div className="absolute inset-0 flex items-center justify-center z-50 bg-[#E2DDD5]">
-            <div className="text-[#0B1523]/60 font-inter text-[10px] tracking-[0.4em] uppercase animate-pulse">
-              LOADING PORTAL
-            </div>
-          </div>
-        )}
+        <AnimatePresence>
+          {!loaded && (
+            <motion.div 
+              className="fixed inset-0 z-[999] bg-[#FBF9F4] flex flex-col justify-center items-center"
+              initial={{ opacity: 1, filter: "blur(0px)" }}
+              exit={{ opacity: 0, filter: "blur(10px)" }}
+              transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
+            >
+              {/* Inset Luxury Border */}
+              <div className="fixed inset-6 border-[0.5px] border-[#D4AF37]/15 pointer-events-none z-50"></div>
+              
+              {/* Ambient Lighting Vignette */}
+              <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(circle at center, transparent 0%, rgba(200, 190, 180, 0.2) 100%)' }} />
+
+              <div className="flex flex-col items-center z-10 w-full max-w-xs px-8">
+                {/* The Hypnotic Crest */}
+                <motion.div 
+                  animate={{ scale: [0.97, 1, 0.97], opacity: [0.6, 1, 0.6] }}
+                  transition={{ duration: 3.5, ease: [0.25, 1, 0.5, 1], repeat: Infinity }}
+                >
+                  <img src="/logo.png" alt="Rajat Caterers" className="h-16 w-auto object-contain mix-blend-multiply opacity-80" />
+                </motion.div>
+                
+                {/* The Razor-Thin Gold Line */}
+                <div className="w-32 md:w-48 h-[0.5px] bg-[#0B1523]/5 relative overflow-hidden mt-8">
+                  <motion.div 
+                    className="absolute left-0 top-0 bottom-0 bg-[#D4AF37]/80"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${loadProgress}%` }}
+                    transition={{ type: "spring", stiffness: 60, damping: 25 }}
+                  />
+                </div>
+                
+                {/* Typographic Counter Excellence */}
+                <div className="font-light tracking-[0.3em] text-[10px] md:text-xs text-[#0B1523]/70 mt-4 uppercase flex items-center justify-center">
+                  <span>[&nbsp;</span>
+                  <div className="relative flex justify-center items-center">
+                    <AnimatePresence>
+                      <motion.span
+                        key={loadProgress}
+                        initial={{ filter: "blur(4px)", opacity: 0, position: "absolute" }}
+                        animate={{ filter: "blur(0px)", opacity: 1, position: "absolute" }}
+                        exit={{ filter: "blur(4px)", opacity: 0, position: "absolute" }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        {pad(loadProgress, 2)}
+                      </motion.span>
+                    </AnimatePresence>
+                    <span className="opacity-0">{pad(loadProgress, 2)}</span>
+                  </div>
+                  <span>&nbsp;]</span>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Static Video/Canvas Background */}
         <div className="absolute inset-0 w-full h-full z-0">
