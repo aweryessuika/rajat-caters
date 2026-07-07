@@ -97,11 +97,11 @@ export default function HeroImmersive() {
   }, [loaded]);
 
   useEffect(() => {
-    const unsub = scrollYProgress.on("change", (latest) => {
+    const unsub = smoothProgress.on("change", (latest) => {
       progressRef.current = latest;
     });
     return () => unsub();
-  }, [scrollYProgress]);
+  }, [smoothProgress]);
 
   useEffect(() => {
     if (!loaded) return;
@@ -126,8 +126,12 @@ export default function HeroImmersive() {
     window.addEventListener("resize", resize);
     
     const renderLoop = () => {
-      const targetFrameExact = progressRef.current * (FRAME_COUNT - 1);
-      renderTargetRef.current += (targetFrameExact - renderTargetRef.current) * 0.15;
+      // Complete the frame sequence at 80% scroll
+      const frameProgress = Math.min(1, progressRef.current / 0.8);
+      const targetFrameExact = frameProgress * (FRAME_COUNT - 1);
+      
+      // progressRef is already physics-smoothed by useSpring, so we map it directly
+      renderTargetRef.current = targetFrameExact;
       
       const frameToDraw = Math.round(renderTargetRef.current);
       const clampedFrame = Math.max(0, Math.min(FRAME_COUNT - 1, frameToDraw));
