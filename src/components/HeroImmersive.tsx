@@ -5,7 +5,7 @@ import { motion, useScroll, useSpring, useTransform, AnimatePresence } from "fra
 
 const FRAME_COUNT = 101;
 const URL_PREFIX = "/sequence/frame_";
-const URL_SUFFIX = "_delay-0.05s.png";
+const URL_SUFFIX = "_delay-0.05s.webp"; // Changed to webp
 
 function pad(n: number, width: number) {
   const str = n.toString();
@@ -39,9 +39,9 @@ export default function HeroImmersive() {
   useEffect(() => {
     let isMounted = true;
     const loadFrames = async () => {
-      // 15 frames is enough to cover the initial hero scroll without stutter
-      // The rest load asynchronously behind the scenes
-      const CRITICAL_FRAMES = 15;
+      // Reduced critical frames from 15 down to 5 since webp is very fast.
+      // This means the loading screen will vanish almost instantly.
+      const CRITICAL_FRAMES = 5;
       let loadedCount = 0;
       
       const criticalPromises = [];
@@ -73,7 +73,6 @@ export default function HeroImmersive() {
       
       if (isMounted) {
         setLoadProgress(100);
-        // Small delay to let the 100% render briefly
         setTimeout(() => {
           if (isMounted) setLoaded(true);
         }, 100);
@@ -81,7 +80,6 @@ export default function HeroImmersive() {
     };
     loadFrames();
     
-    // Prevent scrolling while loading
     document.body.style.overflow = "hidden";
     
     return () => { 
@@ -89,7 +87,6 @@ export default function HeroImmersive() {
     };
   }, []);
   
-  // Re-enable scroll when loaded
   useEffect(() => {
     if (loaded) {
       document.body.style.overflow = "";
@@ -289,3 +286,4 @@ export default function HeroImmersive() {
     </div>
   );
 }
+
