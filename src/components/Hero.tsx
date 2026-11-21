@@ -303,7 +303,7 @@ export default function Hero() {
               animate={{ scale: [0.97, 1, 0.97], opacity: [0.75, 1, 0.75] }}
               transition={{ duration: 3.2, ease: "easeInOut", repeat: Infinity }}
             >
-              <Image src="/logo-mark.png" alt="Rajat Caterers" width={120} height={120} priority className="size-28 rounded-full ring-1 ring-gold/50 md:size-32" />
+              <Image src="/logo-badge.png" alt="Rajat Caterers" width={256} height={256} priority className="size-40 object-contain md:size-52" />
             </motion.div>
             <div className="relative mt-10 h-px w-40 overflow-hidden bg-white/10 md:w-56">
               <motion.div

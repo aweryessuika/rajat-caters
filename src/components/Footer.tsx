@@ -30,7 +30,7 @@ export default function Footer() {
         </motion.div>
         <div className="mt-14 grid gap-12 md:grid-cols-[1.2fr_1fr_1fr]">
           <div className="flex flex-col gap-5">
-            <Image src="/logo-full.webp" alt="Rajat Caterers" width={160} height={160} className="size-36 object-contain" />
+            <Image src="/logo-badge.png" alt="Rajat Caterers" width={288} height={288} className="size-36 object-contain" />
             <p className="eyebrow text-gold">[ Four decades of culinary excellence ]</p>
           </div>
 

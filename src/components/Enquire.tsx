@@ -76,7 +76,7 @@ function OccasionCard({
             <p className="eyebrow text-gold">[ Your occasion ]</p>
             <p className="mt-3 font-display text-3xl font-light italic text-gold-soft">{first ? `For ${first}` : "Taking shape"}</p>
           </div>
-          <Image src="/logo-mark.png" alt="" width={48} height={48} className="size-12 rounded-full ring-1 ring-gold/40" />
+          <Image src="/logo-badge.png" alt="" width={112} height={112} className="size-14 object-contain" />
         </div>
 
         <dl className="mt-6">

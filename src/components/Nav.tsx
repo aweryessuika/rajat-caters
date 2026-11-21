@@ -99,7 +99,7 @@ export default function Nav() {
             aria-label="Rajat Caterers, back to top"
             className="flex items-center gap-3"
           >
-            <Image src="/logo-mark.png" alt="" width={44} height={44} priority className="size-10 rounded-full object-cover ring-1 ring-gold/50 md:size-11" />
+            <Image src="/logo-badge.png" alt="" width={112} height={112} priority className="size-12 object-contain md:size-14" />
             <span className={`hidden font-display text-[22px] font-medium tracking-wide sm:block ${dark ? "text-white" : "text-ink"}`}>
               Rajat Caterers
             </span>
