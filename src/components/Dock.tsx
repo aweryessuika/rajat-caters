@@ -29,7 +29,9 @@ export default function Dock() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 12 }}
           transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-          className="fixed bottom-5 right-4 z-[60] flex flex-col gap-3 md:right-6"
+          // On phones the dock sits above the dish tray (which lives at the bottom) so they never overlap.
+          style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + var(--dock-bottom, 1.25rem))" }}
+          className="fixed right-4 z-[60] flex flex-col gap-3 [--dock-bottom:5.5rem] md:right-6 md:[--dock-bottom:1.25rem]"
         >
           <a
             href={WA_URL}

@@ -82,7 +82,7 @@ export function WordReveal({
         return (
           <span key={`${word}-${i}`} aria-hidden="true" className="inline-block overflow-hidden pb-[0.12em] -mb-[0.12em] align-bottom">
             <motion.span
-              className={`inline-block will-change-transform ${isEmphasis ? emphasisClassName : ""}`}
+              className={`inline-block ${isEmphasis ? emphasisClassName : ""}`}
               variants={{
                 hidden: { y: "108%", rotate: 2 },
                 show: { y: "0%", rotate: 0, transition: { duration: 1, ease: EASE } },

@@ -18,20 +18,27 @@ import Cta from "@/components/ui/Cta";
 import Magnetic from "@/components/ui/Magnetic";
 import { WordReveal } from "@/components/ui/Reveal";
 
-const FRAME_COUNT = 101;
-const CRITICAL = 8;
+/** Laptops use the full 1920px film (101 frames). Phones use a lighter 3:4 slice, every second frame. */
+const DESKTOP_FRAMES = 101;
+const PHONE_FRAMES = 51;
+const phoneSrc = (n: number) => `/sequence-m/m_${String(n).padStart(2, "0")}.webp`;
 /** The footage finishes at 88% of the hero's scroll length, then holds on the last frame. */
 const SEQUENCE_END = 0.88;
+
+type Frame = ImageBitmap | HTMLImageElement;
+const frameW = (f: Frame) => (f instanceof HTMLImageElement ? f.naturalWidth : f.width);
+const frameH = (f: Frame) => (f instanceof HTMLImageElement ? f.naturalHeight : f.height);
 
 const CAPTIONS = [
   { range: [0.3, 0.4, 0.5, 0.58], eyebrow: "Chapter 02", text: "From one south Delhi kitchen to 10,000+ events.", emphasis: "10,000+" },
   { range: [0.64, 0.72, 0.84, 0.93], eyebrow: "Chapter 03", text: "Every plate carries one promise: create memories that last.", emphasis: "memories" },
 ] as const;
 
-function loadOrder(): number[] {
+/** Spread the remaining frames out first (every 4th), then fill the gaps, so scrubbing early never hits a hole. */
+function loadOrder(count: number, critical: number): number[] {
   const first: number[] = [];
   const rest: number[] = [];
-  for (let i = CRITICAL; i < FRAME_COUNT; i++) (i % 4 === 0 ? first : rest).push(i);
+  for (let i = critical; i < count; i++) (i % 4 === 0 ? first : rest).push(i);
   return [...first, ...rest];
 }
 
@@ -66,9 +73,11 @@ function Caption({
 
 export default function Hero() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const framesRef = useRef<HTMLImageElement[]>([]);
-  const progressRef = useRef(0);
+  const framesRef = useRef<(Frame | undefined)[]>([]);
+  const phoneRef = useRef(false);
+  const countRef = useRef(DESKTOP_FRAMES);
 
   const [loaded, setLoaded] = useState(false);
   const [loadProgress, setLoadProgress] = useState(0);
@@ -79,115 +88,160 @@ export default function Hero() {
   const driftY = useSpring(0, { stiffness: 50, damping: 20 });
 
   const { scrollYProgress } = useScroll({ target: containerRef, offset: ["start start", "end end"] });
-  const smooth = useSpring(scrollYProgress, { stiffness: 110, damping: 28, restDelta: 0.0005 });
+  // Smoothed copy drives the captions only. The footage has its own frame-rate-independent smoothing below.
+  const smooth = useSpring(scrollYProgress, { stiffness: 160, damping: 30, restDelta: 0.0005 });
 
   useMotionValueEvent(smooth, "change", (v) => {
-    progressRef.current = v;
     const next = v < 0.29 ? 0 : v < 0.62 ? 1 : 2;
     setChapter((prev) => (prev === next ? prev : next));
   });
 
-  /* Preload: first frames gate the preloader, the rest stream in behind it. */
+  /* Preload: the first few frames gate the loader, the rest stream in behind it. */
   useEffect(() => {
     let alive = true;
     lockScroll();
-    const frames: HTMLImageElement[] = new Array(FRAME_COUNT);
-    framesRef.current = frames;
 
-    const load = (i: number) =>
-      new Promise<void>((resolve) => {
-        const img = new window.Image();
-        img.decoding = "async";
-        img.onload = () => resolve();
-        img.onerror = () => resolve();
-        img.src = frameSrc(i);
-        frames[i] = img;
-      });
+    const phone = window.matchMedia("(max-width: 767px)").matches;
+    const count = phone ? PHONE_FRAMES : DESKTOP_FRAMES;
+    const critical = phone ? 4 : 8;
+    const batch = phone ? 4 : 6;
+    phoneRef.current = phone;
+    countRef.current = count;
+    const frames: (Frame | undefined)[] = new Array(count);
+    framesRef.current = frames;
+    const src = (i: number) => (phone ? phoneSrc(i) : frameSrc(i));
+
+    const load = async (i: number) => {
+      try {
+        if (phone && "createImageBitmap" in window) {
+          // Decoded once, off the main thread, so scrubbing never pays for decoding.
+          const res = await fetch(src(i));
+          frames[i] = await createImageBitmap(await res.blob());
+        } else {
+          const img = new window.Image();
+          img.src = src(i);
+          await img.decode();
+          frames[i] = img;
+        }
+      } catch (err) {
+        // A frame that fails to load is skipped; the nearest earlier frame stays on screen.
+        console.warn("Hero frame failed to load", i, err);
+      }
+    };
 
     (async () => {
       let done = 0;
       await Promise.all(
-        Array.from({ length: CRITICAL }, (_, i) =>
+        Array.from({ length: critical }, (_, i) =>
           load(i).then(() => {
             done += 1;
-            if (alive) setLoadProgress(Math.round((done / CRITICAL) * 100));
+            if (alive) setLoadProgress(Math.round((done / critical) * 100));
           }),
         ),
       );
-      await new Promise((r) => setTimeout(r, 700));
+      await new Promise((r) => setTimeout(r, phone ? 450 : 700));
       if (!alive) return;
       setLoaded(true);
       unlockScroll();
 
-      const order = loadOrder();
-      for (let i = 0; i < order.length && alive; i += 6) {
-        await Promise.all(order.slice(i, i + 6).map(load));
+      const order = loadOrder(count, critical);
+      for (let i = 0; i < order.length && alive; i += batch) {
+        await Promise.all(order.slice(i, i + batch).map(load));
       }
     })();
 
     return () => {
       alive = false;
       unlockScroll();
+      frames.forEach((f) => {
+        if (typeof ImageBitmap !== "undefined" && f instanceof ImageBitmap) f.close();
+      });
     };
   }, []);
 
-  /* Draw loop: only paints when the frame changes. */
+  /* Draw loop: eases toward the scroll position, blends neighbouring frames, repaints only on change. */
   useEffect(() => {
     if (!loaded) return;
     const canvas = canvasRef.current;
+    const stage = stageRef.current;
     const ctx = canvas?.getContext("2d", { alpha: false });
-    if (!canvas || !ctx) return;
-    ctx.imageSmoothingQuality = "high";
+    if (!canvas || !stage || !ctx) return;
+    ctx.imageSmoothingQuality = "medium";
 
-    let cw = window.innerWidth;
-    let ch = window.innerHeight;
-    let drawn = -1;
+    const count = countRef.current;
+    const maxDpr = phoneRef.current ? 1.5 : 1.75;
+    let cw = 0;
+    let ch = 0;
+    let pos = -1;
+    let drawnPos = -2;
+    let last = performance.now();
     let raf = 0;
 
     const resize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      cw = window.innerWidth;
-      ch = window.innerHeight;
-      canvas.width = Math.round(cw * dpr);
-      canvas.height = Math.round(ch * dpr);
-      drawn = -1;
+      const w = stage.clientWidth;
+      const h = stage.clientHeight;
+      // Phones fire resize while the address bar slides in and out. Resizing the canvas clears it,
+      // which shows up as flicker, so ignore pure height wobble.
+      if (cw && w === cw && Math.abs(h - ch) < 160) return;
+      const dpr = Math.min(window.devicePixelRatio || 1, maxDpr);
+      cw = w;
+      ch = h;
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      drawnPos = -2;
     };
     resize();
-    window.addEventListener("resize", resize);
+    const ro = new ResizeObserver(resize);
+    ro.observe(stage);
 
-    const nearestReady = (target: number) => {
-      for (let i = target; i >= 0; i--) {
-        const img = framesRef.current[i];
-        if (img && img.complete && img.naturalWidth > 0) return i;
-      }
-      return -1;
+    const paint = (f: Frame, alpha: number) => {
+      const iw = frameW(f);
+      const ih = frameH(f);
+      const scale = Math.max(canvas.width / iw, canvas.height / ih);
+      const w = iw * scale;
+      const h = ih * scale;
+      ctx.globalAlpha = alpha;
+      ctx.drawImage(f, (canvas.width - w) / 2, (canvas.height - h) / 2, w, h);
     };
 
-    const tick = () => {
-      const t = Math.min(1, progressRef.current / SEQUENCE_END);
-      const wanted = Math.max(0, Math.min(FRAME_COUNT - 1, Math.round(t * (FRAME_COUNT - 1))));
-      const index = nearestReady(wanted);
-      if (index >= 0 && index !== drawn) {
-        const img = framesRef.current[index];
-        drawn = index;
-        const cr = cw / ch;
-        const ir = img.naturalWidth / img.naturalHeight;
-        let w = cw;
-        let h = ch;
-        if (cr > ir) h = cw / ir;
-        else w = ch * ir;
-        const sx = canvas.width / cw;
-        ctx.drawImage(img, ((cw - w) / 2) * sx, ((ch - h) / 2) * sx, w * sx, h * sx);
+    const draw = (p: number) => {
+      const frames = framesRef.current;
+      const lo = Math.min(count - 1, Math.floor(p));
+      let base = -1;
+      for (let k = lo; k >= 0; k--) {
+        if (frames[k]) {
+          base = k;
+          break;
+        }
+      }
+      if (base < 0) return;
+      paint(frames[base] as Frame, 1);
+      const next = frames[lo + 1];
+      const frac = p - lo;
+      if (next && frac > 0.015) paint(next, frac);
+      ctx.globalAlpha = 1;
+    };
+
+    const tick = (now: number) => {
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      const target = Math.min(1, Math.max(0, scrollYProgress.get() / SEQUENCE_END)) * (count - 1);
+      if (pos < 0) pos = target;
+      else pos += (target - pos) * (1 - Math.exp(-dt * 14));
+      if (Math.abs(target - pos) < 0.003) pos = target;
+      if (pos !== drawnPos) {
+        draw(pos);
+        drawnPos = pos;
       }
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
 
     return () => {
-      window.removeEventListener("resize", resize);
+      ro.disconnect();
       cancelAnimationFrame(raf);
     };
-  }, [loaded]);
+  }, [loaded, scrollYProgress]);
 
   const scrim = useTransform(smooth, [0, 0.25, 0.3], [1, 0.9, 1]);
   const introOpacity = useTransform(smooth, [0.14, 0.27], [1, 0]);
@@ -197,7 +251,8 @@ export default function Hero() {
   return (
     <div id="top" ref={containerRef} className="relative h-[300vh] bg-navy">
       <div
-        className="sticky top-0 h-[100dvh] w-full overflow-hidden bg-navy"
+        ref={stageRef}
+        className="sticky top-0 h-svh w-full overflow-hidden bg-navy"
         onPointerMove={(e) => {
           if (reducedMotion || e.pointerType !== "mouse") return;
           driftX.set(-(e.clientX / window.innerWidth - 0.5) * 24);
@@ -295,7 +350,7 @@ export default function Hero() {
           <motion.div
             data-dark
             className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-navy"
-            exit={{ opacity: 0, filter: "blur(8px)" }}
+            exit={{ opacity: 0 }}
             transition={{ duration: 0.8, ease: [0.77, 0, 0.175, 1] }}
           >
             <div aria-hidden="true" className="pointer-events-none absolute inset-5 border border-gold/20 md:inset-8" />

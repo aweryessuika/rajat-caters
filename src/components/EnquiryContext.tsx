@@ -72,7 +72,8 @@ function SelectionTray() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 16, scale: 0.97 }}
           transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
-          className="fixed bottom-5 left-1/2 z-[70] w-[calc(100%-2rem)] max-w-md -translate-x-1/2"
+          style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 1.25rem)" }}
+          className="fixed left-1/2 z-[70] w-[calc(100%-2rem)] max-w-md -translate-x-1/2"
         >
           <button
             type="button"

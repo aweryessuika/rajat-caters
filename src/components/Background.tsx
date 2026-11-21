@@ -12,7 +12,8 @@ export default function Background() {
           `,
         }}
       />
-      <div className="grain absolute inset-0 opacity-[0.07] mix-blend-multiply" />
+      {/* Grain is skipped on phones: a full-screen fixed layer repainted on every scroll frame costs more than it adds. */}
+      <div className="grain absolute inset-0 opacity-[0.05] max-md:hidden" />
     </div>
   );
 }

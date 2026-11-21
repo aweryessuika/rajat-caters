@@ -34,6 +34,18 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
   }
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* No 300ms tap delay, no accidental double-tap zoom on controls. */
+  a,
+  button,
+  summary,
+  [role="tab"],
+  label {
+    touch-action: manipulation;
+  }
   ::selection {
     background: var(--color-gold-soft);
     color: var(--color-navy);
