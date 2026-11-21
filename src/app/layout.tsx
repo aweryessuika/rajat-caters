@@ -1,47 +1,100 @@
-import type { Metadata } from "next";
-import { Fraunces, Inter } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Cormorant_Garamond, Manrope } from "next/font/google";
 import "./globals.css";
-import FixedNav from "@/components/FixedNav";
-import FloatingActionBtn from "@/components/FloatingActionBtn";
+import Background from "@/components/Background";
+import Nav from "@/components/Nav";
+import Dock from "@/components/Dock";
+import SmoothScroll from "@/components/SmoothScroll";
+import Providers from "@/components/Providers";
+import { BRAND } from "@/lib/content";
 
-const fraunces = Fraunces({
+const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
-  axes: ["opsz"],
-  weight: "variable",
-  variable: "--font-fraunces",
+  weight: ["300", "400", "500", "600"],
+  style: ["normal", "italic"],
+  variable: "--font-cormorant",
   display: "swap",
 });
 
-const inter = Inter({
+const manrope = Manrope({
   subsets: ["latin"],
-  weight: ["400", "500"],
-  variable: "--font-inter",
+  variable: "--font-manrope",
   display: "swap",
 });
+
+const TITLE = "Rajat Caterers | 40 Years of Delhi Wedding & Event Catering";
+const DESCRIPTION =
+  "Delhi NCR caterers since 1986. Weddings, corporate galas and government functions, 10,000+ events served, with customised menus, live counters and eco-friendly practices.";
 
 export const metadata: Metadata = {
-  title: "Rajat Caterers | The Art of the Banquet",
-  description: "Forty years of culinary excellence, composed for the few.",
-  icons: {
-    icon: "/logo.png",
-    apple: "/logo.png",
+  metadataBase: new URL(BRAND.websiteUrl),
+  title: TITLE,
+  description: DESCRIPTION,
+  applicationName: BRAND.name,
+  keywords: [
+    "Delhi caterers",
+    "wedding catering Delhi NCR",
+    "corporate catering Delhi",
+    "Faridabad caterers",
+    "live counters",
+    "Rajat Caterers",
+  ],
+  icons: { icon: "/icon.png", apple: "/icon.png" },
+  openGraph: {
+    title: TITLE,
+    description: DESCRIPTION,
+    type: "website",
+    siteName: BRAND.name,
+    images: [{ url: "/sequence/frame_000_delay-0.05s.webp", width: 1920, height: 1080, alt: "Golden buffet service by Rajat Caterers" }],
   },
 };
 
-import BackgroundWaves from "@/components/BackgroundWaves";
+export const viewport: Viewport = {
+  themeColor: "#0a1530",
+  width: "device-width",
+  initialScale: 1,
+};
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FoodEstablishment",
+  name: BRAND.name,
+  description: DESCRIPTION,
+  foundingDate: String(BRAND.founded),
+  telephone: BRAND.phones.map((p) => p.tel),
+  url: BRAND.websiteUrl,
+  servesCuisine: ["North Indian", "Indo-Chinese", "Mughlai"],
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: "F-302, Ibiza Town, Surajkund",
+    addressLocality: "Faridabad",
+    postalCode: "121010",
+    addressCountry: "IN",
+  },
+  areaServed: "Delhi NCR",
+};
+
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${inter.variable}`}>
-      <body className="antialiased">
-        <BackgroundWaves />
-        <FixedNav />
-        <FloatingActionBtn />
-        {children}
+    <html lang="en" className={`${cormorant.variable} ${manrope.variable}`}>
+      <body>
+        <noscript>
+          <style>{`[aria-hidden="true"] > span, [style*="opacity: 0"], [style*="opacity:0"], .scrub-word { opacity: 1 !important; transform: none !important; }`}</style>
+        </noscript>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+        <a
+          href="#story"
+          className="fixed left-4 top-4 z-[300] -translate-y-24 bg-gold px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-navy transition-transform duration-200 focus:translate-y-0"
+        >
+          Skip to content
+        </a>
+        <Providers>
+          <SmoothScroll />
+          <Background />
+          <Nav />
+          <Dock />
+          {children}
+        </Providers>
       </body>
     </html>
   );
