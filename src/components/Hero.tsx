@@ -304,7 +304,7 @@ export default function Hero() {
             className="mt-6 flex flex-col gap-6 md:mt-8 md:flex-row md:items-end md:justify-between md:gap-8"
           >
             <p className="max-w-md text-base leading-relaxed text-white/85 md:text-lg [@media(max-height:700px)]:hidden">
-              Forty years of Delhi’s weddings, galas and celebrations, cooked from family recipes and plated with care.
+              Forty years of Delhi’s weddings and galas, cooked from family recipes. Now in Delhi NCR and at destination weddings worldwide.
             </p>
             <div className="flex flex-wrap gap-3 [&>div]:max-[420px]:w-full [&_a]:whitespace-nowrap max-[420px]:[&_a]:w-full max-[420px]:[&_a]:justify-between">
               <Magnetic>

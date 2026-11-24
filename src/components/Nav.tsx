@@ -189,7 +189,7 @@ export default function Nav() {
                   <a
                     href={`#${link.id}`}
                     onClick={go(link.id)}
-                    className="flex items-baseline gap-4 border-b border-white/10 py-4 font-display text-5xl font-light tracking-tight transition-colors duration-200 active:text-gold"
+                    className="flex items-baseline gap-4 border-b border-white/10 py-3 font-display text-[clamp(2.1rem,9vw,3rem)] font-light tracking-tight transition-colors duration-200 active:text-gold"
                   >
                     <span className="eyebrow text-gold/80">0{i + 1}</span>
                     {link.label}
@@ -197,12 +197,18 @@ export default function Nav() {
                 </motion.li>
               ))}
             </ul>
-            <div className="mt-8 flex flex-col gap-2 text-sm text-paper/80">
+            <div className="mt-6 grid grid-cols-2 gap-x-4 text-sm text-paper/80">
               {BRAND.phones.map((p) => (
                 <a key={p.tel} href={`tel:${p.tel}`} className="inline-flex min-h-11 items-center">
                   {p.display}
                 </a>
               ))}
+              <a href={`https://wa.me/${BRAND.whatsapp}`} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center">
+                WhatsApp
+              </a>
+              <a href={`mailto:${BRAND.email}`} className="inline-flex min-h-11 items-center">
+                Email us
+              </a>
             </div>
           </motion.div>
         )}

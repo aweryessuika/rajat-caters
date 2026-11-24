@@ -11,6 +11,7 @@
   --color-gold-soft: #e9d9a8;
   --color-gold-deep: #80601a;
   --color-nonveg: #a32a1f;
+  --color-veg: #2e7d32;
 
   --font-display: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
   --font-sans: var(--font-manrope), system-ui, sans-serif;
@@ -239,6 +240,23 @@ input[type="range"].guest-range:active::-webkit-slider-thumb {
   }
   .stack-card {
     transform: none !important;
+  }
+  .style-card {
+    clip-path: none !important;
+  }
+  .seal {
+    animation: none !important;
+  }
+}
+
+/* Slow-turning set-text seal behind the signatures index (constant motion, so linear). */
+.seal {
+  animation: seal-spin 60s linear infinite;
+  transform-origin: 50% 50%;
+}
+@keyframes seal-spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 

@@ -24,7 +24,7 @@ const manrope = Manrope({
 
 const TITLE = "Rajat Caterers | 40 Years of Delhi Wedding & Event Catering";
 const DESCRIPTION =
-  "Delhi NCR caterers since 1986. Weddings, corporate galas and government functions, 10,000+ events served, with customised menus, live counters and eco-friendly practices.";
+  "Delhi NCR caterers since 1986, now catering destination weddings and conferences worldwide. Royal buffets, live food stations and plated fine dining in North Indian, Mughlai and Continental, with 10,000+ events served.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(BRAND.websiteUrl),
@@ -36,7 +36,8 @@ export const metadata: Metadata = {
     "wedding catering Delhi NCR",
     "corporate catering Delhi",
     "Faridabad caterers",
-    "live counters",
+    "live food stations",
+    "destination wedding caterers",
     "Rajat Caterers",
   ],
   icons: { icon: "/icon.png", apple: "/icon.png" },
@@ -63,8 +64,9 @@ const jsonLd = {
   description: DESCRIPTION,
   foundingDate: String(BRAND.founded),
   telephone: BRAND.phones.map((p) => p.tel),
+  email: BRAND.email,
   url: BRAND.websiteUrl,
-  servesCuisine: ["North Indian", "Indo-Chinese", "Mughlai"],
+  servesCuisine: ["North Indian", "Continental", "Mughlai"],
   address: {
     "@type": "PostalAddress",
     streetAddress: "F-302, Ibiza Town, Surajkund",
@@ -72,7 +74,7 @@ const jsonLd = {
     postalCode: "121010",
     addressCountry: "IN",
   },
-  areaServed: "Delhi NCR",
+  areaServed: ["Delhi NCR", "Worldwide"],
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

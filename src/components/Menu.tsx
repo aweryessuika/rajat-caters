@@ -3,30 +3,24 @@
 import { useId, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, Plus, Search, X } from "lucide-react";
-import { MENU, type Dish, type MenuCategory } from "@/lib/content";
+import { MENU, SIGNATURES, type Dish, type MenuCategory } from "@/lib/content";
 import { useEnquiry } from "@/components/EnquiryContext";
 import { Eyebrow, FadeUp, WordReveal } from "@/components/ui/Reveal";
 import Cta from "@/components/ui/Cta";
+import DietMark from "@/components/ui/DietMark";
 
-function NonVegMark() {
-  return (
-    <span
-      role="img"
-      aria-label="Non-vegetarian"
-      title="Non-vegetarian"
-      className="mt-[0.7em] inline-flex size-3.5 shrink-0 items-center justify-center border border-nonveg"
-    >
-      <span className="size-1.5 rounded-full bg-nonveg" />
-    </span>
-  );
-}
+/** Signatures are searchable alongside the menu, with their real veg / non-veg mark. */
+const SIGNATURE_DISHES = SIGNATURES.map((s) => ({
+  dish: { id: s.id, name: s.name, note: s.desc, veg: s.veg } satisfies Dish,
+  where: `House signature · ${s.cuisine}`,
+}));
 
 function DishRow({ dish, where }: { dish: Dish; where?: string }) {
   const { has, toggle } = useEnquiry();
   const picked = has(dish.id);
   return (
     <li className="group flex items-start gap-3 border-b border-ink/10 py-4 transition-colors duration-300 hover:border-gold-deep/50">
-      <NonVegMark />
+      <DietMark veg={dish.veg ?? false} className="mt-[0.7em]" />
       <div className="min-w-0 flex-1">
         <p className={`font-display text-2xl font-normal leading-tight tracking-tight transition-colors duration-300 md:text-[28px] ${picked ? "text-gold-deep" : "text-ink group-hover:text-gold-deep"}`}>
           {dish.name}
@@ -82,13 +76,13 @@ export default function Menu() {
   const q = query.trim().toLowerCase();
   const results = useMemo(() => {
     if (!q) return [];
-    return MENU.flatMap((cat) =>
-      cat.groups.flatMap((g) =>
-        g.dishes
-          .filter((dish) => `${dish.name} ${dish.note ?? ""}`.toLowerCase().includes(q))
-          .map((dish) => ({ dish, where: `${cat.label} · ${g.title}` })),
+    const matches = (dish: Dish) => `${dish.name} ${dish.note ?? ""}`.toLowerCase().includes(q);
+    return [
+      ...SIGNATURE_DISHES.filter((r) => matches(r.dish)),
+      ...MENU.flatMap((cat) =>
+        cat.groups.flatMap((g) => g.dishes.filter(matches).map((dish) => ({ dish, where: `${cat.label} · ${g.title}` }))),
       ),
-    );
+    ];
   }, [q]);
 
   return (
@@ -123,7 +117,7 @@ export default function Menu() {
                 type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Biryani, tikka, prawn…"
+                placeholder="Biryani, tikka, paneer…"
                 autoComplete="off"
                 className="h-12 w-full border-0 border-b border-ink/30 bg-transparent pl-7 pr-9 text-base text-ink outline-none transition-colors duration-200 placeholder:text-ink/45 focus:border-gold-deep"
               />
@@ -220,7 +214,7 @@ export default function Menu() {
 
         <FadeUp className="mt-20 flex flex-col items-start gap-6 border-t border-ink/15 pt-10 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3 text-sm text-ink/75">
-            <NonVegMark />
+            <DietMark veg={false} />
             <span>Non-vegetarian. Vegetarian and mixed menus are customised to your requirement.</span>
           </div>
           <Cta href="#enquire">Request a tailored menu</Cta>

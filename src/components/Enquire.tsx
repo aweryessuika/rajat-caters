@@ -3,7 +3,7 @@
 import { useEffect, useId, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion, useSpring, useTransform } from "framer-motion";
-import { MessageCircle, Phone, X } from "lucide-react";
+import { Mail, MessageCircle, Phone, X } from "lucide-react";
 import { BRAND, EVENT_TYPES } from "@/lib/content";
 import { useEnquiry, type PickedDish } from "@/components/EnquiryContext";
 import { scrollToId } from "@/lib/scroll";
@@ -12,6 +12,8 @@ import Spotlight from "@/components/ui/Spotlight";
 import Magnetic from "@/components/ui/Magnetic";
 
 type Errors = Partial<Record<"name" | "phone" | "email", string>>;
+type Channel = "whatsapp" | "email";
+type Sent = { channel: Channel; url: string };
 
 const inputBase =
   "w-full min-w-0 border-0 border-b bg-transparent py-3 font-display text-2xl font-light text-paper outline-none transition-colors duration-200 placeholder:text-paper/35 focus:border-gold md:text-[28px]";
@@ -64,7 +66,7 @@ function OccasionCard({
   date: string;
   guests: number;
   picked: readonly PickedDish[];
-  sent: boolean;
+  sent: Channel | null;
 }) {
   const first = name.trim().split(" ")[0];
   const shown = picked.slice(0, 3);
@@ -111,7 +113,7 @@ function OccasionCard({
 
         <p className="eyebrow mt-6 flex items-center gap-3 text-paper/60">
           <span aria-hidden="true" className={`size-1.5 rounded-full ${sent ? "bg-gold" : "bg-paper/40"}`} />
-          {sent ? "Ready to send on WhatsApp" : "Draft, updates as you type"}
+          {sent ? `Ready to send by ${sent === "whatsapp" ? "WhatsApp" : "email"}` : "Draft, updates as you type"}
         </p>
 
         <AnimatePresence>
@@ -147,7 +149,7 @@ export default function Enquire() {
   const [guests, setGuests] = useState(250);
   const [notes, setNotes] = useState("");
   const [errors, setErrors] = useState<Errors>({});
-  const [sent, setSent] = useState<string | null>(null);
+  const [sent, setSent] = useState<Sent | null>(null);
 
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
@@ -159,8 +161,7 @@ export default function Enquire() {
     return next;
   };
 
-  const onSubmit = (e: FormEvent) => {
-    e.preventDefault();
+  const send = (channel: Channel) => {
     const found = validate();
     setErrors(found);
     if (Object.keys(found).length > 0) {
@@ -182,11 +183,24 @@ export default function Enquire() {
       notes.trim() ? `Notes: ${notes.trim()}` : null,
     ].filter((l): l is string => l !== null);
 
-    const url = `https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent(lines.join("\n"))}`;
-    window.open(url, "_blank", "noopener,noreferrer");
-    setSent(url);
+    const body = encodeURIComponent(lines.join("\n"));
+    if (channel === "whatsapp") {
+      const url = `https://wa.me/${BRAND.whatsapp}?text=${body}`;
+      window.open(url, "_blank", "noopener,noreferrer");
+      setSent({ channel, url });
+    } else {
+      const subject = encodeURIComponent(`Catering enquiry: ${type}${date ? `, ${formatDate(date)}` : ""}`);
+      const url = `mailto:${BRAND.email}?subject=${subject}&body=${body}`;
+      window.location.href = url;
+      setSent({ channel, url });
+    }
     // The form collapses into the thank-you panel, so bring the section back into view.
     window.setTimeout(() => scrollToId("enquire"), 180);
+  };
+
+  const onSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    send("whatsapp");
   };
 
   const fieldBorder = (err?: string) => (err ? "border-[#e0675b]" : "border-white/25");
@@ -223,6 +237,19 @@ export default function Enquire() {
             </div>
           </div>
           <div>
+            <p className="eyebrow text-gold">[ Write ]</p>
+            <div className="mt-3 flex flex-col">
+              <a href={`https://wa.me/${BRAND.whatsapp}`} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-3 font-display text-3xl font-light transition-colors duration-200 hover:text-gold-soft">
+                <MessageCircle aria-hidden="true" className="size-5 text-gold" strokeWidth={1.5} />
+                {BRAND.whatsappDisplay}
+              </a>
+              <a href={`mailto:${BRAND.email}`} className="inline-flex min-h-11 items-center gap-3 text-[17px] text-paper/85 underline decoration-gold/50 underline-offset-4 transition-colors duration-200 hover:text-gold-soft">
+                <Mail aria-hidden="true" className="size-4 text-gold" strokeWidth={1.5} />
+                {BRAND.email}
+              </a>
+            </div>
+          </div>
+          <div>
             <p className="eyebrow text-gold">[ Visit ]</p>
             <address className="mt-3 text-[17px] not-italic leading-relaxed text-paper/85">
               {BRAND.address.map((l) => (
@@ -255,12 +282,15 @@ export default function Enquire() {
                   Thank you, <em className="text-gold-soft">{name.trim().split(" ")[0]}</em>.
                 </h3>
                 <p className="mt-6 max-w-lg text-paper/80">
-                  WhatsApp should have opened with your enquiry filled in. Press send there and we will call you back. If it did not open, use the buttons below.
+                  {sent.channel === "whatsapp"
+                    ? "WhatsApp should have opened with your enquiry filled in. Press send there and we will call you back."
+                    : `Your email app should have opened a message to ${BRAND.email} with your enquiry filled in. Press send there and we will call you back.`}{" "}
+                  If it did not open, use the buttons below.
                 </p>
                 <div className="mt-8 flex flex-wrap gap-3">
-                  <a href={sent} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center gap-3 bg-gold px-7 text-[11px] font-semibold uppercase tracking-[0.26em] text-navy transition-[background-color,transform] duration-200 hover:bg-gold-soft active:scale-[0.97]">
-                    <MessageCircle className="size-4" strokeWidth={1.75} aria-hidden="true" />
-                    Open WhatsApp
+                  <a href={sent.url} target={sent.channel === "whatsapp" ? "_blank" : undefined} rel="noopener noreferrer" className="inline-flex min-h-12 items-center gap-3 bg-gold px-7 text-[11px] font-semibold uppercase tracking-[0.26em] text-navy transition-[background-color,transform] duration-200 hover:bg-gold-soft active:scale-[0.97]">
+                    {sent.channel === "whatsapp" ? <MessageCircle className="size-4" strokeWidth={1.75} aria-hidden="true" /> : <Mail className="size-4" strokeWidth={1.75} aria-hidden="true" />}
+                    {sent.channel === "whatsapp" ? "Open WhatsApp" : "Open email"}
                   </a>
                   <a href={`tel:${BRAND.phones[0].tel}`} className="inline-flex min-h-12 items-center gap-3 border border-white/40 px-7 text-[11px] font-semibold uppercase tracking-[0.26em] transition-[background-color,color,transform] duration-200 hover:bg-white hover:text-navy active:scale-[0.97]">
                     <Phone className="size-4" strokeWidth={1.75} aria-hidden="true" />
@@ -358,21 +388,27 @@ export default function Enquire() {
                   </div>
                 )}
 
-                <div className="flex flex-col items-start gap-5 md:flex-row md:items-center">
+                <div className="flex flex-col gap-5">
+                <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
                   <Magnetic>
                     <button type="submit" className="group inline-flex min-h-14 items-center gap-3 bg-gold px-9 text-[12px] font-semibold uppercase tracking-[0.26em] text-navy transition-[background-color,transform] duration-200 hover:bg-gold-soft active:scale-[0.97]">
                     <MessageCircle className="size-4" strokeWidth={1.75} aria-hidden="true" />
                     Send enquiry on WhatsApp
                   </button>
                   </Magnetic>
-                  <p className="max-w-xs text-sm text-paper/65">Opens WhatsApp with your details filled in. Nothing is sent until you press send there.</p>
+                  <button type="button" onClick={() => send("email")} className="inline-flex min-h-14 items-center gap-3 border border-white/35 px-7 text-[11px] font-semibold uppercase tracking-[0.26em] text-paper/90 transition-[border-color,color,transform] duration-200 hover:border-gold hover:text-gold-soft active:scale-[0.97]">
+                    <Mail className="size-4" strokeWidth={1.75} aria-hidden="true" />
+                    Or send by email
+                  </button>
+                </div>
+                <p className="max-w-md text-sm text-paper/65">Opens WhatsApp or your email app with your details filled in. Nothing is sent until you press send there.</p>
                 </div>
               </motion.form>
             )}
           </AnimatePresence>
 
           <aside aria-label="Summary of your enquiry" className="lg:sticky lg:top-24 lg:self-start">
-            <OccasionCard name={name} type={type} date={date} guests={guests} picked={picked} sent={sent !== null} />
+            <OccasionCard name={name} type={type} date={date} guests={guests} picked={picked} sent={sent?.channel ?? null} />
           </aside>
         </div>
       </div>

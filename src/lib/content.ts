@@ -5,14 +5,25 @@ export const BRAND = {
     { display: "+91 98113 75848", tel: "+919811375848" },
     { display: "+91 99712 32315", tel: "+919971232315" },
   ],
-  whatsapp: "919811375848",
+  /** WhatsApp Business line (different from the call numbers). */
+  whatsapp: "919811375242",
+  whatsappDisplay: "+91 98113 75242",
+  email: "caterersrajat@gmail.com",
   address: ["F-302, Ibiza Town, Surajkund", "Faridabad, 121010"],
   website: "www.rajatcaterers.com",
   websiteUrl: "https://www.rajatcaterers.com",
 } as const;
 
+export const SERVICE_REGIONS = [
+  { label: "Delhi NCR", note: "Home ground" },
+  { label: "Worldwide", note: "Destination weddings & conferences" },
+] as const;
+
+export const CUISINES = ["North Indian", "Continental", "Mughlai", "Live Stations"] as const;
+
 export const NAV_LINKS = [
   { id: "story", label: "Story" },
+  { id: "signatures", label: "Signatures" },
   { id: "services", label: "Services" },
   { id: "menu", label: "Menu" },
   { id: "weekly", label: "Weekly Menu" },
@@ -20,14 +31,94 @@ export const NAV_LINKS = [
 ] as const;
 
 export const MARQUEE_ITEMS = [
+  "Royal Buffets",
+  "Live Food Stations",
+  "Plated Fine Dining",
   "Weddings",
   "Corporate Galas",
-  "Government Functions",
-  "Live Counters",
-  "Destination Events",
-  "Customised Menus",
+  "Destination Weddings",
+  "Conferences Worldwide",
   "Since 1986",
 ] as const;
+
+export type Signature = {
+  id: string;
+  name: string;
+  cuisine: string;
+  veg: boolean;
+  desc: string;
+};
+
+/** The house signatures, supplied by the owner. Descriptions describe the dish, not invented history. */
+export const SIGNATURES: readonly Signature[] = [
+  {
+    id: "signature-smoked-butter-chicken",
+    name: "Smoked Butter Chicken",
+    cuisine: "North Indian",
+    veg: false,
+    desc: "Tandoor-charred chicken in a silken tomato and butter gravy, finished with a breath of charcoal smoke.",
+  },
+  {
+    id: "signature-dal-makhani",
+    name: "Dal Makhani",
+    cuisine: "North Indian",
+    veg: true,
+    desc: "Whole black lentils simmered low and slow for hours, then enriched with butter and cream.",
+  },
+  {
+    id: "signature-paneer-lababdar",
+    name: "Paneer Lababdar",
+    cuisine: "Mughlai",
+    veg: true,
+    desc: "Soft paneer in a rich, gently spiced onion and tomato gravy with cashew and cream.",
+  },
+  {
+    id: "signature-sarson-ka-saag",
+    name: "Sarson ka Saag & Makki ki Roti",
+    cuisine: "Punjabi",
+    veg: true,
+    desc: "The Punjabi winter classic: slow-cooked mustard greens with white butter and maize-flour roti.",
+  },
+  {
+    id: "signature-chicken-alfredo-pasta",
+    name: "Chicken Alfredo Pasta",
+    cuisine: "Continental",
+    veg: false,
+    desc: "Tender chicken tossed through a creamy parmesan Alfredo, for the guests who want a taste of the continent.",
+  },
+];
+
+export type ServiceStyle = {
+  id: string;
+  title: string;
+  desc: string;
+  frame: number;
+  position: string;
+};
+
+export const SERVICE_STYLES: readonly ServiceStyle[] = [
+  {
+    id: "royal-buffet",
+    title: "Royal Buffets",
+    desc: "Brass, gold and a long, generous spread, set and labelled before the first guest arrives.",
+    frame: 0,
+    position: "60% 50%",
+  },
+  {
+    id: "live-stations",
+    title: "Live Food Stations",
+    desc: "Tandoor, grill and tawa cooked in front of your guests, hot off the flame.",
+    frame: 60,
+    position: "55% 50%",
+  },
+  {
+    id: "plated",
+    title: "Plated Fine Dining",
+    desc: "Composed plates served course by course, for galas, conferences and intimate dinners.",
+    frame: 100,
+    position: "42% 50%",
+  },
+];
 
 export const STORY = {
   eyebrow: "Our Story",
@@ -110,16 +201,16 @@ export const SERVICES: readonly Service[] = [
     position: "55% 50%",
   },
   {
-    id: "abroad",
-    title: "Events Abroad",
-    desc: "We have taken the kitchen overseas for the Airtel and Hitachi groups, catering in Singapore, Malaysia, Egypt and Thailand.",
-    tags: ["Singapore", "Malaysia", "Egypt", "Thailand"],
+    id: "destination",
+    title: "Destination Weddings & Conferences",
+    desc: "Delhi NCR is home, but the kitchen travels. We cater destination weddings and conferences around the world, and have already served the Airtel and Hitachi groups in Singapore, Malaysia, Egypt and Thailand.",
+    tags: ["Worldwide", "Destination weddings", "Conferences"],
     frame: 12,
     position: "50% 50%",
   },
 ];
 
-export type Dish = { id: string; name: string; note?: string };
+export type Dish = { id: string; name: string; note?: string; veg?: boolean };
 export type MenuGroup = { title: string; dishes: readonly Dish[] };
 export type MenuCategory = {
   id: string;
@@ -331,7 +422,7 @@ export const PROMISES = [
   },
 ] as const;
 
-export const EVENT_TYPES = ["Wedding", "Corporate", "Government", "Social", "Other"] as const;
+export const EVENT_TYPES = ["Wedding", "Destination wedding", "Corporate", "Conference", "Government", "Social", "Other"] as const;
 
 export const frameSrc = (n: number) =>
   `/sequence/frame_${String(n).padStart(3, "0")}_delay-0.05s.webp`;

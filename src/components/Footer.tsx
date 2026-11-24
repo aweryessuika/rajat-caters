@@ -32,6 +32,7 @@ export default function Footer() {
           <div className="flex flex-col gap-5">
             <Image src="/logo-badge.png" alt="Rajat Caterers" width={288} height={288} className="size-36 object-contain" />
             <p className="eyebrow text-gold">[ Four decades of culinary excellence ]</p>
+            <p className="max-w-xs text-[15px] leading-relaxed text-paper/70">Delhi NCR, and destination weddings and conferences around the world.</p>
           </div>
 
           <nav aria-label="Footer">
@@ -63,6 +64,12 @@ export default function Footer() {
                     {p.display}
                   </a>
                 ))}
+                <a href={`https://wa.me/${BRAND.whatsapp}`} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center text-[17px] text-paper/85 transition-colors hover:text-gold-soft">
+                  WhatsApp {BRAND.whatsappDisplay}
+                </a>
+                <a href={`mailto:${BRAND.email}`} className="inline-flex min-h-11 items-center break-all text-[17px] text-paper/85 transition-colors hover:text-gold-soft">
+                  {BRAND.email}
+                </a>
               </div>
             </div>
             <address className="text-[17px] not-italic leading-relaxed text-paper/85">
