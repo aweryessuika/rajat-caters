@@ -6,6 +6,7 @@ import { AnimatePresence, motion, useMotionValueEvent, useScroll, useSpring } fr
 import { Menu, X } from "lucide-react";
 import { BRAND, NAV_LINKS } from "@/lib/content";
 import { lockScroll, scrollToId, scrollToTop, unlockScroll } from "@/lib/scroll";
+import RollText from "@/components/ui/RollText";
 
 export default function Nav() {
   const { scrollY, scrollYProgress } = useScroll();
@@ -112,15 +113,18 @@ export default function Nav() {
                   href={`#${link.id}`}
                   onClick={go(link.id)}
                   aria-current={active === link.id ? "true" : undefined}
-                  className={`group relative py-2 text-[11px] font-semibold uppercase tracking-[0.26em] transition-colors duration-200 ${linkTone}`}
+                  className={`group relative flex py-2 text-[11px] font-semibold uppercase tracking-[0.26em] transition-colors duration-200 ${linkTone}`}
                 >
-                  {link.label}
-                  <span
-                    aria-hidden="true"
-                    className={`absolute inset-x-0 -bottom-0.5 h-px origin-left bg-gold transition-transform duration-500 ease-out-expo ${
-                      active === link.id ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
-                    }`}
-                  />
+                  <RollText text={link.label} />
+                  {/* One gold marker glides between links as you scroll through the sections. */}
+                  {active === link.id && (
+                    <motion.span
+                      layoutId="nav-active"
+                      aria-hidden="true"
+                      transition={{ type: "spring", duration: 0.5, bounce: 0.15 }}
+                      className="absolute -bottom-1 left-1/2 size-1 -translate-x-1/2 rotate-45 bg-gold"
+                    />
+                  )}
                 </a>
               </li>
             ))}
@@ -130,13 +134,13 @@ export default function Nav() {
             <a
               href="#enquire"
               onClick={go("enquire")}
-              className={`hidden min-h-11 items-center border px-6 text-[11px] font-semibold uppercase tracking-[0.26em] transition-[background-color,color,border-color,transform] duration-200 active:scale-[0.97] sm:inline-flex ${
+              className={`group hidden min-h-11 items-center border px-6 text-[11px] font-semibold uppercase tracking-[0.26em] transition-[background-color,color,border-color,transform] duration-200 active:scale-[0.97] sm:inline-flex ${
                 dark
                   ? "border-white/45 text-white hover:bg-white hover:text-navy"
                   : "border-ink/30 text-ink hover:bg-ink hover:text-paper"
               }`}
             >
-              Enquire
+              <RollText text="Enquire" />
             </a>
             <button
               ref={menuButtonRef}

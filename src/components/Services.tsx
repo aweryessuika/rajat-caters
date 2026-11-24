@@ -44,7 +44,7 @@ export default function Services() {
                       <span className={`eyebrow w-8 shrink-0 transition-colors duration-300 ${open ? "text-gold-deep" : "text-ink/50"}`}>0{i + 1}</span>
                       <span
                         className={`flex-1 font-display text-[clamp(2rem,4.4vw,3.8rem)] font-light leading-none tracking-tight transition-[color,transform] duration-500 ease-out-expo ${
-                          open ? "translate-x-2 text-ink" : "text-ink/55 group-hover:text-ink"
+                          open ? "translate-x-2 italic text-ink" : "text-ink/55 group-hover:text-ink"
                         }`}
                       >
                         {service.title}

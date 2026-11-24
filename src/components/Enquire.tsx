@@ -11,6 +11,7 @@ import { Eyebrow, FadeUp, WordReveal } from "@/components/ui/Reveal";
 import Spotlight from "@/components/ui/Spotlight";
 import Magnetic from "@/components/ui/Magnetic";
 
+import CurtainBg from "@/components/ui/Curtain";
 type Errors = Partial<Record<"name" | "phone" | "email", string>>;
 type Channel = "whatsapp" | "email";
 type Sent = { channel: Channel; url: string };
@@ -206,7 +207,8 @@ export default function Enquire() {
   const fieldBorder = (err?: string) => (err ? "border-[#e0675b]" : "border-white/25");
 
   return (
-    <section id="enquire" data-dark className="relative z-10 overflow-hidden bg-navy px-6 pb-16 pt-28 text-paper md:px-14 md:pt-44">
+    <section id="enquire" data-dark className="relative z-10 overflow-hidden px-6 pb-16 pt-28 text-paper md:px-14 md:pt-44">
+      <CurtainBg />
       <Spotlight />
       <div className="relative mx-auto max-w-[1400px]">
         <FadeUp>

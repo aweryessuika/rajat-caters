@@ -156,7 +156,7 @@ export default function Menu() {
                       if (e.key === "ArrowLeft") setActiveId(MENU[(i - 1 + MENU.length) % MENU.length].id);
                     }}
                     className={`relative shrink-0 whitespace-nowrap px-1 py-4 font-display text-3xl font-light tracking-tight transition-colors duration-300 active:scale-[0.98] md:text-5xl ${
-                      selected ? "text-ink" : "text-ink/40 hover:text-ink/75"
+                      selected ? "italic text-ink" : "text-ink/40 hover:text-ink/75"
                     }`}
                   >
                     {cat.label}

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, Manrope } from "next/font/google";
+import { Fraunces, Manrope } from "next/font/google";
 import "./globals.css";
 import Background from "@/components/Background";
 import Nav from "@/components/Nav";
@@ -8,11 +8,12 @@ import SmoothScroll from "@/components/SmoothScroll";
 import Providers from "@/components/Providers";
 import { BRAND } from "@/lib/content";
 
-const cormorant = Cormorant_Garamond({
+// Variable display serif: weight, optical size and softness are all live axes we animate.
+const fraunces = Fraunces({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
   style: ["normal", "italic"],
-  variable: "--font-cormorant",
+  axes: ["SOFT", "WONK", "opsz"],
+  variable: "--font-fraunces",
   display: "swap",
 });
 
@@ -79,7 +80,7 @@ const jsonLd = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${cormorant.variable} ${manrope.variable}`}>
+    <html lang="en" className={`${fraunces.variable} ${manrope.variable}`}>
       <body>
         <noscript>
           <style>{`[aria-hidden="true"] > span, [style*="opacity: 0"], [style*="opacity:0"], .scrub-word { opacity: 1 !important; transform: none !important; }`}</style>

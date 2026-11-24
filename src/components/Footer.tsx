@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { ArrowUp } from "lucide-react";
 import { BRAND, NAV_LINKS } from "@/lib/content";
 import { scrollToId, scrollToTop } from "@/lib/scroll";
+import VariableWordmark from "@/components/ui/VariableWordmark";
 
 export default function Footer() {
   return (
@@ -23,9 +24,9 @@ export default function Footer() {
               hidden: { y: "105%" },
               show: { y: "0%", transition: { duration: 1.3, ease: [0.77, 0, 0.175, 1] } },
             }}
-            className="select-none font-display text-[clamp(3.6rem,18.4vw,17rem)] font-light italic leading-[0.92] tracking-tight text-gold-soft/90"
+            className="select-none font-display text-[clamp(3rem,14.2vw,15rem)] font-light italic leading-[0.95] tracking-[-0.02em] text-gold-soft/90"
           >
-            Rajat Caterers
+            <VariableWordmark text="Rajat Caterers" />
           </motion.p>
         </motion.div>
         <div className="mt-14 grid gap-12 md:grid-cols-[1.2fr_1fr_1fr]">

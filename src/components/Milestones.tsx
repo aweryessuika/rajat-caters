@@ -7,6 +7,7 @@ import { Eyebrow, FadeUp, WordReveal } from "@/components/ui/Reveal";
 import Spotlight from "@/components/ui/Spotlight";
 import Footprint from "@/components/Footprint";
 
+import CurtainBg from "@/components/ui/Curtain";
 function CountUp({ to, suffix }: { to: number; suffix: string }) {
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true, margin: "0px 0px -10% 0px" });
@@ -34,7 +35,8 @@ function CountUp({ to, suffix }: { to: number; suffix: string }) {
 
 export default function Milestones() {
   return (
-    <section id="milestones" data-dark className="relative z-10 overflow-hidden bg-navy px-6 py-28 text-paper md:px-14 md:py-40">
+    <section id="milestones" data-dark className="relative z-10 overflow-hidden px-6 py-28 text-paper md:px-14 md:py-40">
+      <CurtainBg />
       <Spotlight />
       <div className="relative mx-auto max-w-[1400px]">
         <FadeUp>

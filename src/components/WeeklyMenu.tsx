@@ -6,6 +6,7 @@ import { MEALS, WEEKLY_MENU, WEEK_DAYS, type WeekDay } from "@/lib/content";
 import { Eyebrow, FadeUp, WordReveal } from "@/components/ui/Reveal";
 import Spotlight from "@/components/ui/Spotlight";
 
+import CurtainBg from "@/components/ui/Curtain";
 const subscribeNever = () => () => {};
 
 /** Which meal is being served right now: 0 breakfast, 1 lunch, 2 dinner. Null on the server. */
@@ -26,7 +27,8 @@ export default function WeeklyMenu() {
   const day: WeekDay = chosen ?? today ?? "Sunday";
 
   return (
-    <section id="weekly" data-dark className="relative z-10 overflow-hidden bg-navy px-6 py-28 text-paper md:px-14 md:py-44">
+    <section id="weekly" data-dark className="relative z-10 overflow-hidden px-6 py-28 text-paper md:px-14 md:py-44">
+      <CurtainBg />
       <Spotlight />
       <div className="relative mx-auto max-w-[1400px]">
         <FadeUp>

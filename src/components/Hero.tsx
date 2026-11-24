@@ -60,7 +60,8 @@ function Caption({
   const before = text.slice(0, text.indexOf(emphasis));
   const after = text.slice(text.indexOf(emphasis) + emphasis.length);
   return (
-    <motion.div style={{ opacity, y }} className="absolute inset-x-0 bottom-0 z-20 px-6 pb-10 md:px-14 md:pb-32">
+    // pointer-events-none: these captions sit over the intro, and must never swallow clicks on its CTAs.
+    <motion.div style={{ opacity, y }} className="pointer-events-none absolute inset-x-0 bottom-0 z-20 px-6 pb-10 md:px-14 md:pb-32">
       <p className="eyebrow mb-5 text-gold-soft">[ {eyebrow} ]</p>
       <p className="max-w-4xl font-display text-[clamp(2.4rem,6.2vw,5.6rem)] font-normal leading-[1] tracking-tight text-white [text-shadow:0_2px_30px_rgba(5,10,22,0.65)]">
         {before}

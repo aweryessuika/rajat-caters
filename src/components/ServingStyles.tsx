@@ -5,11 +5,13 @@ import { motion } from "framer-motion";
 import { CUISINES, SERVICE_REGIONS, SERVICE_STYLES, frameSrc } from "@/lib/content";
 import { Eyebrow, FadeUp, WordReveal } from "@/components/ui/Reveal";
 
+import CurtainBg from "@/components/ui/Curtain";
 const CURTAIN = [0.77, 0, 0.175, 1] as const;
 
 export default function ServingStyles() {
   return (
-    <section id="styles" data-dark className="relative z-10 overflow-hidden bg-navy px-6 py-28 text-paper md:px-14 md:py-40">
+    <section id="styles" data-dark className="relative z-10 overflow-hidden px-6 py-28 text-paper md:px-14 md:py-40">
+      <CurtainBg />
       <div className="mx-auto max-w-[1400px]">
         <FadeUp>
           <Eyebrow tone="dark">How We Serve</Eyebrow>
