@@ -422,7 +422,44 @@ export const PROMISES = [
   },
 ] as const;
 
-export const EVENT_TYPES = ["Wedding", "Destination wedding", "Corporate", "Conference", "Government", "Social", "Other"] as const;
+export type Testimonial = {
+  id: string;
+  quote: string;
+  name: string;
+  role?: string;
+  context: string;
+  rating?: number;
+};
+
+/** Real client reviews, forwarded by the owner on WhatsApp. Quotes are verbatim. Never add invented ones. */
+export const TESTIMONIALS: readonly Testimonial[] = [
+  {
+    id: "millin",
+    quote:
+      "Rajat Caterers bring so much care to the entire experience. The food is delicious, beautifully presented, and the kind your guests go back for seconds of. Their team is warm and attentive, and the service runs so smoothly that you can actually relax and enjoy your own celebration. I’d happily recommend them to anyone looking for great food and genuinely thoughtful service.",
+    name: "Millin Sangha Gujral",
+    context: "Celebration",
+  },
+  {
+    id: "cgst",
+    quote:
+      "Working with Rajat Caterers has been a seamless experience. Their team understands our corporate requirements perfectly and ensures smooth execution, quality food, and excellent hospitality every time. Their professionalism and commitment to customer satisfaction make them a dependable choice for corporate catering.",
+    name: "Anshuman Jain",
+    role: "Superintendent, CGST",
+    context: "Corporate catering",
+    rating: 5,
+  },
+  {
+    id: "ed",
+    quote:
+      "We have been associated with Rajat caterers for a long time. They are absolutely reliable and ensures great quality food and service for any occasion big or small! Our experience have been pleasant with them and their team.",
+    name: "Sharat Kumar",
+    role: "Senior Officer, Enforcement Directorate",
+    context: "Long-standing client",
+  },
+];
+
+export const EVENT_TYPES =["Wedding", "Destination wedding", "Corporate", "Conference", "Government", "Social", "Other"] as const;
 
 export const frameSrc = (n: number) =>
   `/sequence/frame_${String(n).padStart(3, "0")}_delay-0.05s.webp`;

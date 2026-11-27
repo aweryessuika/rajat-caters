@@ -330,3 +330,25 @@ input[type="range"].guest-range:active::-webkit-slider-thumb {
   animation-direction: reverse;
   animation-duration: 52s;
 }
+
+/* Review progress line: CSS drives the dwell time, so pausing the animation pauses autoplay. */
+.tm-progress {
+  transform: scaleX(0);
+  animation-name: tm-progress;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+@keyframes tm-progress {
+  to {
+    transform: scaleX(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tm-progress {
+    display: none;
+  }
+  .tm-word {
+    opacity: 1 !important;
+    filter: none !important;
+  }
+}

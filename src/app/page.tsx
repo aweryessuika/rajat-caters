@@ -9,6 +9,7 @@ import Menu from "@/components/Menu";
 import WeeklyMenu from "@/components/WeeklyMenu";
 import Gallery from "@/components/Gallery";
 import OurPromise from "@/components/OurPromise";
+import Testimonials from "@/components/Testimonials";
 import Enquire from "@/components/Enquire";
 import Footer from "@/components/Footer";
 
@@ -27,6 +28,7 @@ export default function Home() {
         <WeeklyMenu />
         <Gallery />
         <OurPromise />
+        <Testimonials />
         <Enquire />
       </main>
       <Footer />
